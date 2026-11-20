@@ -1,0 +1,226 @@
+<!-- Ported from App/AIPanel.swift (AIPanel, KeyBanner, AssistantView, GenerateView, FillView, ExpandView, ColorMatchView,
+     RelightView, CleanupView, StrengthAction, UpscaleView, PresetsView, LensBlurView, JobsView). Each tool is a
+     disclosure group; a menu command opens its group and scrolls to it. The plan checklist (PlanView) and the
+     sections' state are completed against the real AIController in phase 1. -->
+<UserControl x:Class="Glimmer.App.Views.Panels.AIPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:Glimmer.App.Controls"
+             xmlns:l="clr-namespace:Glimmer.App.Localization"
+             xmlns:ed="clr-namespace:Glimmer.Editor;assembly=Glimmer.Editor"
+             xmlns:core="clr-namespace:Glimmer.Core;assembly=Glimmer.Core"
+             xmlns:p="clr-namespace:Glimmer.App.Views.Panels">
+  <UserControl.Resources>
+    <Style x:Key="SectionHeader" TargetType="StackPanel">
+      <Setter Property="Orientation" Value="Horizontal" />
+    </Style>
+    <Style TargetType="Expander" BasedOn="{StaticResource Glimmer.Disclosure}">
+      <Setter Property="Margin" Value="0,0,0,12" />
+    </Style>
+    <Style x:Key="Field" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+      <Setter Property="Margin" Value="0,0,0,8" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+      <Setter Property="FontSize" Value="{StaticResource Glimmer.Size.Callout}" />
+    </Style>
+  </UserControl.Resources>
+  <ScrollViewer x:Name="Scroller" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Margin="12">
+      <!-- Add your OpenRouter key. A neutral surface: yellow is a state's colour. -->
+      <Border x:Name="KeyBanner" Background="{DynamicResource Glimmer.RaisedBrush}" CornerRadius="8" Padding="10" Margin="0,0,0,12">
+        <StackPanel>
+          <StackPanel Orientation="Horizontal">
+            <c:Icon Symbol="key" Size="14" Margin="0,0,6,0" />
+            <TextBlock Text="{l:Loc 'Add your OpenRouter key'}" Style="{StaticResource Glimmer.Text.Headline}" />
+          </StackPanel>
+          <TextBlock Margin="0,6" Style="{StaticResource Glimmer.Text.Secondary}"
+                     Text="{l:Loc 'Generative tools call OpenRouter with your own key. On-device tools work without one.'}" />
+          <Button Style="{DynamicResource Glimmer.Compact.Button}" HorizontalAlignment="Left" Content="{l:Loc 'Open Settings…'}" Click="OnOpenSettings" />
+        </StackPanel>
+      </Border>
+
+      <Expander x:Name="AssistantSection" Tag="Assistant" IsExpanded="True" AutomationProperties.Name="{l:Loc Assistant}">
+        <Expander.Header>
+          <StackPanel Style="{StaticResource SectionHeader}">
+            <c:Icon Symbol="sparkles" Size="14" Margin="0,0,6,0" />
+            <TextBlock Text="{l:Loc Assistant}" Style="{StaticResource Glimmer.Text.Headline}" />
+          </StackPanel>
+        </Expander.Header>
+        <StackPanel>
+          <DockPanel Margin="0,0,0,8">
+            <ToggleButton x:Name="AutoEdit" DockPanel.Dock="Right" Margin="8,0,0,0" Padding="8,0" MinHeight="22" Click="OnAutoEdit"
+                          ToolTip="{l:Loc 'Plans that only use the editor\'s own tools always run straight away. Plans with AI jobs (which cost credits) wait for Run unless this is on.'}"
+                          AutomationProperties.Name="{l:Loc Auto-edit}" AutomationProperties.HelpText="{l:Loc 'Runs plans with paid AI steps without asking first.'}">
+              <ToggleButton.Template>
+                <ControlTemplate TargetType="ToggleButton">
+                  <Border x:Name="Chrome" CornerRadius="6" Background="{DynamicResource Glimmer.RaisedBrush}" BorderBrush="{DynamicResource Glimmer.EdgeBrush}"
+                          BorderThickness="1" Padding="{TemplateBinding Padding}">
+                    <TextBlock x:Name="Label" Text="{l:Loc 'AUTO-EDIT OFF'}" FontSize="{StaticResource Glimmer.Size.Caption2}" FontWeight="SemiBold"
+                               Foreground="{DynamicResource Glimmer.MutedBrush}" VerticalAlignment="Center" />
+                  </Border>
+                  <ControlTemplate.Triggers>
+                    <Trigger Property="IsChecked" Value="True">
+                      <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource Glimmer.AccentTint35Brush}" />
+                      <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource Glimmer.AccentBrush}" />
+                      <Setter TargetName="Label" Property="Text" Value="{l:Loc 'AUTO-EDIT ON'}" />
+                      <Setter TargetName="Label" Property="Foreground" Value="{DynamicResource Glimmer.InkBrush}" />
+                    </Trigger>
+                  </ControlTemplate.Triggers>
+                </ControlTemplate>
+              </ToggleButton.Template>
+            </ToggleButton>
+            <TextBlock Style="{StaticResource Glimmer.Text.Caption}" Text="{l:Loc 'Chat to edit the whole image, or say “add a …” to generate a layer.'}" />
+          </DockPanel>
+          <Border x:Name="Intro" Background="{DynamicResource Glimmer.RaisedBrush}" CornerRadius="12" Padding="10" Margin="0,0,0,8">
+            <TextBlock TextWrapping="Wrap" FontSize="{StaticResource Glimmer.Size.Callout}" Foreground="{DynamicResource Glimmer.InkSoftBrush}"
+                       Text="{l:Loc 'Hi — I\'m your editing assistant. Tell me what you want: I\'ll adjust the photo (“make it warmer”), edit its content (“make the sky pink”), generate a new layer (“add a red bird”), or plan several steps and check the result.'}" />
+          </Border>
+          <ItemsControl x:Name="Messages" Focusable="False">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate DataType="ed:ChatMessage">
+                <Border x:Name="Bubble" CornerRadius="12" Padding="12,8" Margin="0,0,28,8" HorizontalAlignment="Left" Background="{DynamicResource Glimmer.RaisedBrush}"
+                        AutomationProperties.Name="{l:Loc Assistant}">
+                  <StackPanel>
+                    <TextBox Text="{Binding Text, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" Background="Transparent" BorderThickness="0" Padding="0"
+                             Foreground="{Binding Foreground, ElementName=Bubble}" FontSize="{StaticResource Glimmer.Size.Callout}" />
+                    <!-- The plan's steps, their state and Run / Stop / Save as Action. -->
+                    <p:PlanView Message="{Binding}" />
+                  </StackPanel>
+                </Border>
+                <DataTemplate.Triggers>
+                  <DataTrigger Binding="{Binding FromUser}" Value="True">
+                    <Setter TargetName="Bubble" Property="Background" Value="{DynamicResource Glimmer.AccentFillBrush}" />
+                    <Setter TargetName="Bubble" Property="HorizontalAlignment" Value="Right" />
+                    <Setter TargetName="Bubble" Property="Margin" Value="28,0,0,8" />
+                    <Setter TargetName="Bubble" Property="TextElement.Foreground" Value="White" />
+                    <Setter TargetName="Bubble" Property="AutomationProperties.Name" Value="{l:Loc You}" />
+                  </DataTrigger>
+                </DataTemplate.Triggers>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <StackPanel x:Name="Planning" Orientation="Horizontal" Margin="0,0,0,8" Visibility="Collapsed">
+            <c:Spinner Size="12" Margin="0,0,6,0" Foreground="{DynamicResource Glimmer.MutedBrush}" />
+            <TextBlock Text="{l:Loc Planning…}" Style="{StaticResource Glimmer.Text.Secondary}" />
+          </StackPanel>
+          <Button x:Name="SuggestEdits" Style="{DynamicResource Glimmer.Compact.Button}" HorizontalAlignment="Left" Margin="0,0,0,8" Click="OnSuggestEdits"
+                  ToolTip="{l:Loc 'Let the assistant look at the image and propose three edits'}">
+            <StackPanel Orientation="Horizontal">
+              <c:Icon Symbol="wand.and.sparkles" Size="12" Margin="0,0,6,0" />
+              <TextBlock Text="{l:Loc 'Suggest Edits'}" />
+            </StackPanel>
+          </Button>
+          <DockPanel>
+            <Button x:Name="Send" DockPanel.Dock="Right" Margin="8,0,0,0" MinHeight="36" Padding="14,0" Style="{DynamicResource Glimmer.Compact.AccentButton}"
+                    Content="{l:Loc Send}" Click="OnSend" VerticalAlignment="Bottom" />
+            <Border CornerRadius="10" Background="{DynamicResource Glimmer.BackgroundBrush}" BorderBrush="{DynamicResource Glimmer.FieldEdgeBrush}" BorderThickness="1" Padding="10">
+              <TextBox x:Name="Message" Style="{StaticResource Glimmer.PlainTextBox}" AcceptsReturn="False" TextWrapping="Wrap" MinLines="2" MaxLines="5"
+                       Tag="{l:Loc 'e.g. make the sky a warm sunset — or: add a red bird'}" KeyDown="OnMessageKeyDown"
+                       AutomationProperties.Name="{l:Loc 'Message to the assistant'}" />
+            </Border>
+          </DockPanel>
+          <TextBlock Text="{l:Loc 'Enter to send'}" FontSize="{StaticResource Glimmer.Size.Caption2}" Foreground="{DynamicResource Glimmer.MutedBrush}" Margin="0,6,0,0" />
+        </StackPanel>
+      </Expander>
+
+      <Expander Tag="Generate">
+        <Expander.Header>
+          <StackPanel Style="{StaticResource SectionHeader}">
+            <c:Icon Symbol="photo.badge.plus" Size="14" Margin="0,0,6,0" />
+            <TextBlock Text="{l:Loc Generate}" Style="{StaticResource Glimmer.Text.Headline}" />
+          </StackPanel>
+        </Expander.Header>
+        <StackPanel>
+          <TextBox x:Name="GeneratePrompt" Style="{StaticResource Field}" MinLines="2" AcceptsReturn="True"
+                   AutomationProperties.Name="{l:Loc 'A lighthouse at dusk, film photo'}" />
+          <TextBox x:Name="GenerateNegative" Style="{StaticResource Field}" AutomationProperties.Name="{l:Loc 'Avoid (optional)'}" />
+          <ComboBox x:Name="GenerateSize" Style="{DynamicResource Glimmer.Compact.ComboBox}" Margin="0,0,0,8" SelectedIndex="0" AutomationProperties.Name="{l:Loc Size}">
+            <ComboBoxItem Content="{l:Loc Document}" Tag="document" />
+            <ComboBoxItem Content="{l:Loc Square}" Tag="square" />
+            <ComboBoxItem Content="{l:Loc Portrait}" Tag="portrait" />
+            <ComboBoxItem Content="{l:Loc Landscape}" Tag="landscape" />
+          </ComboBox>
+          <c:StatusLine Kind="{x:Static core:StatusKind.Notice}" TextKey="Price not known in advance" FontSize="{StaticResource Glimmer.Size.Caption}" Margin="0,0,0,8" />
+          <Button Style="{DynamicResource Glimmer.Compact.Button}" HorizontalAlignment="Left" Content="{l:Loc 'Generate Layer'}" Click="OnGenerate" />
+        </StackPanel>
+      </Expander>
+
+      <Expander Tag="Fill">
+        <Expander.Header>
+          <StackPanel Style="{StaticResource SectionHeader}">
+            <c:Icon Symbol="paintbrush.pointed" Size="14" Margin="0,0,6,0" />
+            <TextBlock Text="{l:Loc 'Generative Fill'}" Style="{StaticResource Glimmer.Text.Headline}" />
+          </StackPanel>
+        </Expander.Header>
+        <StackPanel>
+          <TextBlock x:Name="FillNeedsSelection" Style="{StaticResource Glimmer.Text.Secondary}" Margin="0,0,0,8"
+                     Text="{l:Loc 'Select an area first with the marquee (M), or Select › Subject.'}" />
+          <ListBox x:Name="FillMode" Style="{StaticResource Glimmer.Segmented}" Margin="0,0,0,8" SelectedIndex="0" AutomationProperties.Name="{l:Loc Mode}">
+            <ListBoxItem Content="{l:Loc Fill}" />
+            <ListBoxItem Content="{l:Loc Remove}" />
+          </ListBox>
+          <TextBox x:Name="FillPrompt" Style="{StaticResource Field}" AutomationProperties.Name="{l:Loc 'What should appear? (empty = blend in)'}" />
+          <c:StatusLine Kind="{x:Static core:StatusKind.Notice}" TextKey="Price not known in advance" FontSize="{StaticResource Glimmer.Size.Caption}" Margin="0,0,0,8" />
+          <Button x:Name="FillButton" Style="{DynamicResource Glimmer.Compact.Button}" HorizontalAlignment="Left" Content="{l:Loc 'Fill Selection'}" Click="OnFill" />
+        </StackPanel>
+      </Expander>
+
+      <Expander Tag="Expand">
+        <Expander.Header>
+          <StackPanel Style="{StaticResource SectionHeader}">
+            <c:Icon Symbol="arrow.up.left.and.arrow.down.right" Size="14" Margin="0,0,6,0" />
+            <TextBlock Text="{l:Loc Expand}" Style="{StaticResource Glimmer.Text.Headline}" />
+          </StackPanel>
+        </Expander.Header>
+        <StackPanel>
+          <ListBox x:Name="ExpandFactor" Style="{StaticResource Glimmer.Segmented}" Margin="0,0,0,8" SelectedIndex="1" AutomationProperties.Name="{l:Loc Size}">
+            <ListBoxItem Content="{l:Loc '125 %'}" Tag="1.25" />
+            <ListBoxItem Content="{l:Loc '150 %'}" Tag="1.5" />
+            <ListBoxItem Content="{l:Loc '200 %'}" Tag="2.0" />
+          </ListBox>
+          <TextBox x:Name="ExpandPrompt" Style="{StaticResource Field}" AutomationProperties.Name="{l:Loc 'What\'s beyond the edges? (optional)'}" />
+          <c:StatusLine Kind="{x:Static core:StatusKind.Notice}" TextKey="Price not known in advance" FontSize="{StaticResource Glimmer.Size.Caption}" Margin="0,0,0,8" />
+          <Button Style="{DynamicResource Glimmer.Compact.Button}" HorizontalAlignment="Left" Content="{l:Loc 'Expand Canvas'}" Click="OnExpand" />
+        </StackPanel>
+      </Expander>
+
+      <Expander Tag="ColorMatch">
+        <Expander.Header>
+          <StackPanel Style="{StaticResource SectionHeader}">
+            <c:Icon Symbol="eyedropper.halffull" Size="14" Margin="0,0,6,0" />
+            <TextBlock Text="{l:Loc 'Match Color'}" Style="{StaticResource Glimmer.Text.Headline}" />
+          </StackPanel>
+        </Expander.Header>
+        <StackPanel>
+          <TextBlock Style="{StaticResource Glimmer.Text.Secondary}" Margin="0,0,0,8"
+                     Text="{l:Loc 'Gives the active layer the color grade of a reference image. Runs on this Mac.'}" />
+          <Button Style="{DynamicResource Glimmer.Compact.Button}" HorizontalAlignment="Left" Content="{l:Loc 'Choose Reference…'}" Click="OnMatchColor" />
+        </StackPanel>
+      </Expander>
+
+      <Expander Tag="OnDevice">
+        <Expander.Header>
+          <StackPanel Style="{StaticResource SectionHeader}">
+            <c:Icon Symbol="cpu" Size="14" Margin="0,0,6,0" />
+            <TextBlock Text="{l:Loc 'On This Mac'}" Style="{StaticResource Glimmer.Text.Headline}" />
+          </StackPanel>
+        </Expander.Header>
+        <StackPanel x:Name="OnDevice" />
+      </Expander>
+
+      <!-- Activity: the window's AI jobs and what they cost. -->
+      <StackPanel x:Name="Jobs" Visibility="Collapsed">
+        <DockPanel Margin="0,6,0,6">
+          <Button DockPanel.Dock="Right" Style="{DynamicResource Glimmer.Compact.Button}" Content="{l:Loc Clear}" Click="OnClearJobs" />
+          <TextBlock Text="{l:Loc Activity}" Style="{StaticResource Glimmer.Text.Headline}" />
+        </DockPanel>
+        <ItemsControl x:Name="JobList" Focusable="False">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate DataType="ed:AIJob">
+              <TextBlock Text="{Binding Title, Converter={StaticResource Loc}}" FontSize="{StaticResource Glimmer.Size.Callout}" Margin="0,0,0,4" />
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

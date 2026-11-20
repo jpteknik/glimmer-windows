@@ -1,0 +1,33 @@
+<Project>
+  <!-- Shared settings for every project in the Windows port of Glimmer. -->
+  <PropertyGroup>
+    <Version>0.1.0</Version>
+    <Product>Glimmer</Product>
+    <!-- Shown in every built file's Properties › Details. The original's copyright stays (MIT requires it); the Windows
+         port is Johan Pålsson's, who is responsible for it. -->
+    <Copyright>Copyright (c) 2026 Anders Bjarby (Glimmer Native); Copyright (c) 2026 Johan Pålsson (Glimmer for Windows)</Copyright>
+    <Company>Johan Pålsson</Company>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <!-- Lets the WPF project build from WSL/Linux. It still only RUNS on Windows. -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <!-- Ported code keeps the original's documentation comments; missing ones are not an error. -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <!-- Features a release can be built without, as Config/Features.xcconfig on the Mac. Debug builds always have them.
+       With false the code is not compiled into a release at all (#if GLIMMER_HEAL / GLIMMER_PSD / GLIMMER_RAW).
+       Heal Selection: YES on the Mac since 2026-11-17 by Anders Bjarby's decision; the original's docs/PATENTS.md has
+       the rules its code keeps to. PSD and RAW: YES since 2026-11-16. Override with -p:GlimmerHeal=false etc. -->
+  <PropertyGroup>
+    <GlimmerHeal Condition="'$(GlimmerHeal)' == ''">true</GlimmerHeal>
+    <GlimmerPsd Condition="'$(GlimmerPsd)' == ''">true</GlimmerPsd>
+    <GlimmerRaw Condition="'$(GlimmerRaw)' == ''">true</GlimmerRaw>
+    <DefineConstants Condition="'$(GlimmerHeal)' == 'true' Or '$(Configuration)' == 'Debug'">$(DefineConstants);GLIMMER_HEAL</DefineConstants>
+    <DefineConstants Condition="'$(GlimmerPsd)' == 'true' Or '$(Configuration)' == 'Debug'">$(DefineConstants);GLIMMER_PSD</DefineConstants>
+    <DefineConstants Condition="'$(GlimmerRaw)' == 'true' Or '$(Configuration)' == 'Debug'">$(DefineConstants);GLIMMER_RAW</DefineConstants>
+  </PropertyGroup>
+</Project>

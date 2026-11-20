@@ -1,0 +1,106 @@
+<!-- Ported from App/DocumentView.swift (DocumentView, StartCard, ChromeBar, SidePanel placement, TitleChip).
+     The canvas fills the tab; every chrome part floats over it, as on the Mac: the title chip top left, the chips top
+     right with the side panel under them, the tool rail at the left, the options bar at the top, the omnibar at the
+     bottom. Classic Layout docks the side panel at the right edge instead. -->
+<UserControl x:Class="Glimmer.App.Views.DocumentView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:Glimmer.App.Controls"
+             xmlns:cv="clr-namespace:Glimmer.App.Controls.Canvas"
+             xmlns:l="clr-namespace:Glimmer.App.Localization"
+             xmlns:v="clr-namespace:Glimmer.App.Views"
+             Background="{DynamicResource Glimmer.BackgroundBrush}">
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="*" />
+      <ColumnDefinition Width="Auto" />
+    </Grid.ColumnDefinitions>
+
+    <Grid x:Name="Stage" ClipToBounds="True">
+      <cv:CanvasSurface x:Name="Canvas" Session="{Binding Session}" />
+
+      <!-- Tool rail, vertically centred at the left. -->
+      <v:ToolPalette x:Name="ToolRail" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="12,0,0,0"
+                     Visibility="{Binding ShowsToolPalette, Converter={StaticResource BoolToVisibility}}" />
+
+      <!-- Title chip: name, size and zoom (plus whatever is in progress). Never under the chips at the right. -->
+      <v:TitleChip x:Name="TitleChip" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="12,10,0,0" MaxWidth="560"
+                   IsHitTestVisible="False" Visibility="{Binding ShowsTitleChip, Converter={StaticResource BoolToVisibility}}" />
+
+      <!-- Options for the current tool. -->
+      <v:ToolOptionsBar x:Name="OptionsBar" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="12,48,12,0"
+                        Visibility="{Binding ShowsOptionsBar, Converter={StaticResource BoolToVisibility}}" />
+
+      <!-- Navigator, bottom right. -->
+      <v:NavigatorView HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="12"
+                       Visibility="{Binding ShowsNavigator, Converter={StaticResource BoolToVisibility}}" />
+
+      <!-- The bar that follows the selection: positioned by the view itself. -->
+      <v:SelectionBar x:Name="SelectionBar" Visibility="{Binding ShowsSelectionBar, Converter={StaticResource BoolToVisibility}}" />
+
+      <!-- Omnibar at the bottom. -->
+      <v:Omnibar x:Name="Omnibar" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="12,0,12,16"
+                 Visibility="{Binding ShowsOmnibar, Converter={StaticResource BoolToVisibility}}" />
+
+      <!-- AI, Tools, Layers, Export, Command Palette; the floating side panel under them. -->
+      <DockPanel HorizontalAlignment="Right" Margin="0,10,12,12" LastChildFill="True"
+                 Visibility="{Binding ShowsChrome, Converter={StaticResource BoolToVisibility}}">
+        <StackPanel x:Name="ChromeBar" DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Right">
+          <c:ChromeChip Symbol="sparkles" Title="AI" IsChecked="{Binding AIChipOn, Mode=OneWay}" Click="OnAIChip"
+                        ToolTip="{l:Loc 'Assistant and AI tools'}" Margin="0,0,8,0" />
+          <c:ChromeChip Symbol="wrench.and.screwdriver" Title="Tools" IsChecked="{Binding Session.ShowTools, Mode=OneWay}" Click="OnToolsChip"
+                        ToolTip="{l:Loc 'Show or hide the tools'}" Margin="0,0,8,0" />
+          <c:ChromeChip Symbol="square.3.layers.3d" Title="Layers" IsChecked="{Binding LayersChipOn, Mode=OneWay}" Click="OnLayersChip"
+                        ToolTip="{l:Loc 'Layers, paths, channels and history (⌥⌘L)'}" Margin="0,0,8,0" />
+          <c:ChromeChip Symbol="square.and.arrow.down" Title="Export" Click="OnExportChip"
+                        ToolTip="{l:Loc 'Export the image'}" Margin="0,0,8,0" />
+          <c:ChromeChip Symbol="command" Title="Command Palette" ShowsTitle="False" Click="OnPaletteChip"
+                        ToolTip="{l:Loc 'Search commands or ask the assistant (⌘K)'}" />
+        </StackPanel>
+        <v:SidePanel x:Name="FloatingPanel" Docked="False" Width="340" MaxHeight="640" VerticalAlignment="Top" Margin="0,10,0,0"
+                     Visibility="{Binding ShowsFloatingSidePanel, Converter={StaticResource BoolToVisibility}}" />
+      </DockPanel>
+
+      <!-- A filter's settings, floating and non-modal: the canvas stays visible for the live preview. -->
+      <ContentControl x:Name="FilterSheetHost" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="104,96,0,0" Focusable="False" />
+
+      <!-- An untouched, empty document greets you like the web app does. -->
+      <c:PanelSurface x:Name="StartCard" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="36" CornerRadius="16"
+                      Visibility="{Binding ShowsStartCard, Converter={StaticResource BoolToVisibility}}">
+        <StackPanel HorizontalAlignment="Center">
+          <Grid Width="180" Height="180" HorizontalAlignment="Center">
+            <!-- The glow behind the icon, breathing (GlowPulse.swift). -->
+            <c:GlowPulse GlowColor="#C45CFF" Strength="0.35" Radius="24" CornerRadius="40" />
+            <Border CornerRadius="40" Background="{DynamicResource Glimmer.RaisedBrush}" AutomationProperties.Name="Glimmer">
+              <c:Icon Symbol="sparkle" Size="96" Foreground="{DynamicResource Glimmer.AccentBrush}" />
+            </Border>
+          </Grid>
+          <TextBlock Margin="0,20,0,0" MaxWidth="380" TextAlignment="Center" TextWrapping="Wrap" Foreground="{DynamicResource Glimmer.MutedBrush}"
+                     Text="{l:Loc 'Drop a file anywhere, paste from your clipboard, or open one — or just describe an image in the bar below and AI generates it.'}" />
+          <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
+            <Button Style="{DynamicResource Glimmer.Compact.AccentButton}" Content="{l:Loc 'Open Image'}" Click="OnOpenImage" Margin="0,0,12,0" MinHeight="32" />
+            <Button Style="{DynamicResource Glimmer.Compact.Button}" Content="{l:Loc '⌘K Commands'}" Click="OnPaletteChip" Margin="0,0,12,0" MinHeight="32" />
+            <Button Style="{DynamicResource Glimmer.Compact.Button}" Content="{l:Loc 'Start Blank'}" Click="OnStartBlank" MinHeight="32" />
+          </StackPanel>
+        </StackPanel>
+      </c:PanelSurface>
+
+      <!-- Brief, non-blocking feedback ("nothing to straighten" and the like). -->
+      <c:PanelSurface x:Name="Toast" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,96,0,0" Padding="14,0" CornerRadius="15" Height="30"
+                      IsHitTestVisible="False" Visibility="{Binding Session.Toast, Converter={StaticResource NullToVisibility}}">
+        <TextBlock Text="{Binding Session.Toast, Converter={StaticResource UiText}}" VerticalAlignment="Center"
+                   FontSize="{DynamicResource Glimmer.Size.Callout}" AutomationProperties.LiveSetting="Assertive" />
+      </c:PanelSurface>
+
+      <!-- ⌘K: the command palette over a dimmed canvas. -->
+      <Grid x:Name="PaletteLayer" Visibility="{Binding ShowsPalette, Converter={StaticResource BoolToVisibility}}">
+        <Rectangle Fill="{DynamicResource Glimmer.ScrimBrush}" MouseDown="OnScrimClicked" />
+        <v:CommandPalette x:Name="Palette" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,110,0,0" />
+      </Grid>
+    </Grid>
+
+    <!-- Classic Layout: the side panel docked at the right edge, with every tab. -->
+    <v:SidePanel x:Name="DockedPanel" Grid.Column="1" Docked="True" Width="340"
+                 Visibility="{Binding ShowsDockedSidePanel, Converter={StaticResource BoolToVisibility}}" />
+  </Grid>
+</UserControl>

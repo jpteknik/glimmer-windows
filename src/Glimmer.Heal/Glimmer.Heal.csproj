@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Heal Selection: fills an area from its surroundings. Plain C#, no model. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Glimmer.Heal</RootNamespace>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Glimmer.Heal.Tests" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,174 @@
+<!-- Ported from App/LayersPanel.swift (LayersPanel, LayerPropertiesBar, LayerRow, LayerIcon, Thumbnail). -->
+<UserControl x:Class="Glimmer.App.Views.Panels.LayersPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:Glimmer.App.Controls"
+             xmlns:l="clr-namespace:Glimmer.App.Localization"
+             xmlns:p="clr-namespace:Glimmer.App.Views.Panels"
+             xmlns:core="clr-namespace:Glimmer.Core;assembly=Glimmer.Core">
+  <UserControl.Resources>
+    <c:BoolToVisibility x:Key="Visible" />
+    <!-- A layer's picture: a thumbnail on the checkerboard, a symbol, or the fill's colours. 40 × 30. -->
+    <DataTemplate x:Key="LayerIcon" DataType="p:LayerRowItem">
+      <Grid Width="40" Height="30">
+        <Border CornerRadius="3" ClipToBounds="True" Background="{x:Static p:LayersPanel.CheckerBrush}"
+                Visibility="{Binding ShowsThumbnail, Converter={StaticResource Visible}}">
+          <Image Source="{Binding Thumbnail}" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" />
+        </Border>
+        <Border CornerRadius="3" Background="{Binding FillPreview}" Visibility="{Binding FillPreview, Converter={StaticResource NullToVisibility}}" />
+        <c:Icon Symbol="{Binding Symbol}" Size="15" Foreground="{DynamicResource Glimmer.MutedBrush}" />
+        <Border CornerRadius="3" BorderThickness="1" BorderBrush="{DynamicResource Glimmer.EdgeBrush}" />
+        <Border CornerRadius="2" Background="{DynamicResource Glimmer.PanelBrush}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Padding="1"
+                Visibility="{Binding IsSmart, Converter={StaticResource Visible}}" ToolTip="{l:Loc 'Smart object'}">
+          <c:Icon Symbol="doc.badge.gearshape" Size="9" />
+        </Border>
+        <Border CornerRadius="3" BorderThickness="2" BorderBrush="{DynamicResource Glimmer.AccentBrush}"
+                Visibility="{Binding LayerTargeted, Converter={StaticResource Visible}}" />
+      </Grid>
+    </DataTemplate>
+  </UserControl.Resources>
+
+  <DockPanel>
+    <!-- Properties of the active layer: adjustment settings, fill settings, mask. -->
+    <ScrollViewer x:Name="PropertiesScroller" DockPanel.Dock="Top" MaxHeight="340" VerticalScrollBarVisibility="Auto" Visibility="Collapsed">
+      <p:PropertiesPanel x:Name="Properties" Margin="10" />
+    </ScrollViewer>
+    <Border x:Name="PropertiesDivider" DockPanel.Dock="Top" Height="1" Background="{DynamicResource Glimmer.EdgeBrush}" Visibility="Collapsed" />
+
+    <!-- Blend mode and opacity of the active layer. -->
+    <StackPanel x:Name="PropertiesBar" DockPanel.Dock="Top" Margin="10">
+      <ComboBox x:Name="BlendModeBox" Style="{DynamicResource Glimmer.Compact.ComboBox}" HorizontalAlignment="Left" MinWidth="170"
+                AutomationProperties.Name="{l:Loc 'Blend Mode'}" SelectionChanged="OnBlendModeChanged" />
+      <Grid Margin="0,8,0,0">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="44" />
+        </Grid.ColumnDefinitions>
+        <TextBlock Text="{l:Loc Opacity}" Foreground="{DynamicResource Glimmer.MutedBrush}" FontSize="{DynamicResource Glimmer.Size.Callout}"
+                   VerticalAlignment="Center" Margin="0,0,8,0" />
+        <Slider x:Name="OpacitySlider" Grid.Column="1" Minimum="0" Maximum="100" Style="{DynamicResource Glimmer.Compact.Slider}"
+                AutomationProperties.Name="{l:Loc Opacity}" ValueChanged="OnOpacityChanged" Thumb.DragCompleted="OnOpacityCommitted"
+                PreviewMouseUp="OnOpacityCommitted" />
+        <TextBlock x:Name="OpacityText" Grid.Column="2" TextAlignment="Right" VerticalAlignment="Center" FontSize="{DynamicResource Glimmer.Size.Callout}"
+                   Typography.NumeralAlignment="Tabular" />
+      </Grid>
+    </StackPanel>
+    <Border DockPanel.Dock="Top" Height="1" Background="{DynamicResource Glimmer.EdgeBrush}" />
+
+    <!-- Labelled buttons, as in the web app's layer panel. -->
+    <StackPanel x:Name="Footer" DockPanel.Dock="Bottom" Margin="10">
+      <StackPanel Orientation="Horizontal">
+        <Button Style="{StaticResource Glimmer.TextButton.Prominent}" Content="{l:Loc '+ Layer'}" Tag="layer.new" Click="OnCommand" Margin="0,0,6,0" />
+        <Button Style="{StaticResource Glimmer.TextButton}" Content="{l:Loc Duplicate}" Tag="layer.duplicate" Click="OnCommand" Margin="0,0,6,0" />
+        <Button Style="{StaticResource Glimmer.RaisedIconButton}" Tag="layer.forward" Click="OnCommand" Margin="0,0,6,0"
+                ToolTip="{l:Loc 'Bring Forward'}" AutomationProperties.Name="{l:Loc 'Bring Forward'}">
+          <c:Icon Symbol="arrow.up" Size="12" />
+        </Button>
+        <Button Style="{StaticResource Glimmer.RaisedIconButton}" Tag="layer.backward" Click="OnCommand" Margin="0,0,6,0"
+                ToolTip="{l:Loc 'Send Backward'}" AutomationProperties.Name="{l:Loc 'Send Backward'}">
+          <c:Icon Symbol="arrow.down" Size="12" />
+        </Button>
+        <Button Style="{StaticResource Glimmer.TextButton}" Content="{l:Loc Group}" Tag="layer.group" Click="OnCommand" />
+      </StackPanel>
+      <DockPanel Margin="0,6,0,0" LastChildFill="False">
+        <Button Style="{StaticResource Glimmer.TextButton}" Content="{l:Loc '+ Group'}" Tag="layer.newGroup" Click="OnCommand" Margin="0,0,6,0" />
+        <Button Style="{StaticResource Glimmer.TextButton}" Content="{l:Loc '+ Mask'}" Tag="layer.mask.revealAll" Click="OnCommand" Margin="0,0,6,0" />
+        <Button x:Name="AdjustmentMenuButton" Style="{StaticResource Glimmer.RaisedIconButton}" Click="OnAdjustmentMenu" Margin="0,0,6,0"
+                ToolTip="{l:Loc 'New Adjustment or Fill Layer'}" AutomationProperties.Name="{l:Loc 'New Adjustment or Fill Layer'}">
+          <c:Icon Symbol="circle.lefthalf.filled" Size="12" />
+        </Button>
+        <Button Style="{StaticResource Glimmer.RaisedIconButton}" Tag="layer.style" Click="OnCommand"
+                ToolTip="{l:Loc 'Layer Style'}" AutomationProperties.Name="{l:Loc 'Layer Style'}">
+          <c:Icon Symbol="fx" Size="12" />
+        </Button>
+        <Button DockPanel.Dock="Right" Style="{StaticResource Glimmer.TextButton}" Content="{l:Loc Delete}" Tag="layer.delete" Click="OnCommand" />
+      </DockPanel>
+    </StackPanel>
+    <Border DockPanel.Dock="Bottom" Height="1" Background="{DynamicResource Glimmer.EdgeBrush}" />
+
+    <!-- The layers, top down. -->
+    <Grid>
+      <ListBox x:Name="List" Background="Transparent" BorderThickness="0" Padding="4" AllowDrop="True"
+               AutomationProperties.Name="{l:Loc Layers}" SelectionChanged="OnSelectionChanged" KeyDown="OnListKeyDown"
+               ScrollViewer.HorizontalScrollBarVisibility="Disabled" VirtualizingPanel.IsVirtualizing="True">
+        <ListBox.ItemContainerStyle>
+          <Style TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+            <Setter Property="AutomationProperties.Name" Value="{Binding AccessibilityDescription}" />
+            <Setter Property="Padding" Value="6,2" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="AllowDrop" Value="True" />
+            <EventSetter Event="PreviewMouseLeftButtonDown" Handler="OnRowMouseDown" />
+            <EventSetter Event="PreviewMouseMove" Handler="OnRowMouseMove" />
+            <EventSetter Event="Drop" Handler="OnRowDrop" />
+          </Style>
+        </ListBox.ItemContainerStyle>
+        <ListBox.ItemTemplate>
+          <DataTemplate DataType="p:LayerRowItem">
+            <StackPanel>
+              <DockPanel Height="40">
+                <Button DockPanel.Dock="Left" Style="{StaticResource Glimmer.IconButton}" MinWidth="22" Padding="2" Click="OnToggleVisibility" Tag="{Binding}"
+                        ToolTip="{Binding VisibilityHelp}" AutomationProperties.Name="{Binding VisibilityName}" IsTabStop="False">
+                  <Grid>
+                    <c:Icon Symbol="eye" Size="13" Visibility="{Binding IsVisible, Converter={StaticResource Visible}}" />
+                    <c:Icon Symbol="eye.slash" Size="13" Foreground="{DynamicResource Glimmer.TertiaryBrush}"
+                            Visibility="{Binding IsVisible, Converter={StaticResource Visible}, ConverterParameter=invert}" />
+                  </Grid>
+                </Button>
+                <Border DockPanel.Dock="Left" Width="{Binding Indent}" />
+                <Button DockPanel.Dock="Left" Style="{StaticResource Glimmer.IconButton}" MinWidth="16" Padding="0" Click="OnToggleExpanded" Tag="{Binding}"
+                        Visibility="{Binding IsGroup, Converter={StaticResource Visible}}" AutomationProperties.Name="{Binding ExpandName}" IsTabStop="False">
+                  <c:Icon Symbol="chevron.right" Size="10" RenderTransformOrigin="0.5,0.5">
+                    <c:Icon.Style>
+                      <Style TargetType="c:Icon">
+                        <Style.Triggers>
+                          <DataTrigger Binding="{Binding IsExpanded}" Value="True">
+                            <Setter Property="RenderTransform">
+                              <Setter.Value>
+                                <RotateTransform Angle="90" />
+                              </Setter.Value>
+                            </Setter>
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </c:Icon.Style>
+                  </c:Icon>
+                </Button>
+                <c:Icon DockPanel.Dock="Left" Symbol="arrow.turn.left.down" Size="11" Margin="2,0" Foreground="{DynamicResource Glimmer.MutedBrush}"
+                        Visibility="{Binding IsClipped, Converter={StaticResource Visible}}" ToolTip="{l:Loc 'Clipped to the layer below'}" />
+                <ContentPresenter DockPanel.Dock="Left" Margin="4,0,0,0" ContentTemplate="{StaticResource LayerIcon}" Content="{Binding}"
+                                  VerticalAlignment="Center" MouseLeftButtonUp="OnLayerThumbnail" />
+                <Grid DockPanel.Dock="Left" Width="40" Height="30" Margin="4,0,0,0" Visibility="{Binding HasMask, Converter={StaticResource Visible}}"
+                      MouseLeftButtonUp="OnMaskThumbnail" ToolTip="{l:Loc 'Layer mask'}">
+                  <Border CornerRadius="3" Background="Black" ClipToBounds="True">
+                    <Image Source="{Binding MaskThumbnail}" Stretch="Uniform" />
+                  </Border>
+                  <Border CornerRadius="3" BorderThickness="1" BorderBrush="{DynamicResource Glimmer.EdgeBrush}" />
+                  <c:Icon Symbol="xmark" Size="11" Foreground="{DynamicResource Glimmer.Status.ErrorBrush}"
+                          Visibility="{Binding MaskEnabled, Converter={StaticResource Visible}, ConverterParameter=invert}" />
+                  <Border CornerRadius="3" BorderThickness="2" BorderBrush="{DynamicResource Glimmer.AccentBrush}"
+                          Visibility="{Binding MaskTargeted, Converter={StaticResource Visible}}" />
+                </Grid>
+                <TextBlock DockPanel.Dock="Right" Text="fx" FontStyle="Italic" FontWeight="Bold" FontSize="{DynamicResource Glimmer.Size.Caption}"
+                           Foreground="{DynamicResource Glimmer.MutedBrush}" VerticalAlignment="Center" Margin="4,0"
+                           Visibility="{Binding HasEffects, Converter={StaticResource Visible}}" />
+                <StackPanel VerticalAlignment="Center" Margin="8,0,0,0" Opacity="{Binding ContentOpacity}">
+                  <p:LayerNameField Row="{Binding}" />
+                  <TextBlock Text="{Binding Detail}" Style="{StaticResource Glimmer.Text.Caption}" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap"
+                             Visibility="{Binding Detail, Converter={StaticResource NullToVisibility}}" />
+                </StackPanel>
+              </DockPanel>
+              <!-- Smart filters under a smart object. -->
+              <p:SmartFilterList Row="{Binding}" />
+            </StackPanel>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+      <StackPanel x:Name="EmptyState" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed" Margin="16">
+        <c:Icon Symbol="square.3.layers.3d.slash" Size="28" Foreground="{DynamicResource Glimmer.MutedBrush}" />
+        <TextBlock Text="{l:Loc 'No Layers'}" Style="{StaticResource Glimmer.Text.Headline}" HorizontalAlignment="Center" Margin="0,8,0,4" />
+        <TextBlock Text="{l:Loc 'Add a layer or drop an image on the canvas.'}" Style="{StaticResource Glimmer.Text.Secondary}" TextAlignment="Center" />
+      </StackPanel>
+    </Grid>
+  </DockPanel>
+</UserControl>

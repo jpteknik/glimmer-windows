@@ -1,0 +1,10 @@
+<!-- Ported from App/GlimmerApp.swift (the application object; the menus are built in code from the command registry,
+     as GlimmerCommands builds them from it on the Mac). ThemeMode="Dark" loads WPF's Fluent theme; Glimmer's colours
+     are laid over it in App.xaml.cs, so the Fluent dictionary comes first whatever order WPF inserts it in. -->
+<Application x:Class="Glimmer.App.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             ThemeMode="Dark"
+             ShutdownMode="OnMainWindowClose">
+  <Application.Resources />
+</Application>

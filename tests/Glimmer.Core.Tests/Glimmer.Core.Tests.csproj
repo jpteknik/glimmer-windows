@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>Glimmer.Core.Tests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Glimmer.Core\Glimmer.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" />
+    <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- The File Explorer thumbnail handler's ZIP reader, tested in its native form (ThumbnailZipTests): the Linux build of
+         glimmer_zip.c, and on Windows the DLLs the app ships. All made by src/Glimmer.Thumbnails/build.sh. -->
+    <None Include="Native\libglimmer_zip.so" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\src\Glimmer.App\Shell\GlimmerThumbnails-x64.dll" Link="Native\GlimmerThumbnails-x64.dll" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\src\Glimmer.App\Shell\GlimmerThumbnails-arm64.dll" Link="Native\GlimmerThumbnails-arm64.dll" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

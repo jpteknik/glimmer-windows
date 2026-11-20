@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- New file, no Swift original. ONNX Runtime 1.32's Linux library (and its WebGPU provider) carries a telemetry client that
+     uploads usage events to Microsoft over HTTPS; on this project's Linux test machine it had left a device id and an event
+     store in ~/.cache/Microsoft/DeveloperTools/.onnxruntime. No test may reach the network, so the test process starts with
+     it switched off: the variable has to be in the environment before ONNX Runtime loads, which only the test host's own
+     environment guarantees. dotnet test reads this file through RunSettingsFilePath in Glimmer.AI.Tests.csproj. -->
+<RunSettings>
+  <RunConfiguration>
+    <EnvironmentVariables>
+      <ORT_DISABLE_TELEMETRY>1</ORT_DISABLE_TELEMETRY>
+    </EnvironmentVariables>
+  </RunConfiguration>
+</RunSettings>

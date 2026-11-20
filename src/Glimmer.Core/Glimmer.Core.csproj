@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Document model, tiles, undo, the .glimmer format, .aips and PSD reading/writing. No platform APIs.
+       SkiaSharp and HarfBuzz are used exactly where the Mac version uses Core Text and Core Graphics inside
+       GlimmerCore: laying out, measuring and drawing text layers, glyph outlines, font lookup and rasterizing
+       lasso polygons. The model's public types stay free of Skia types. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Glimmer.Core</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Glimmer.Lzfse\Glimmer.Lzfse.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Numerics.Tensors" />
+    <PackageReference Include="SkiaSharp" />
+    <PackageReference Include="SkiaSharp.HarfBuzz" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Glimmer.Core.Tests" />
+    <InternalsVisibleTo Include="Glimmer.Render" />
+    <InternalsVisibleTo Include="Glimmer.Render.Tests" />
+  </ItemGroup>
+</Project>

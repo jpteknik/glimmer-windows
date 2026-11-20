@@ -1,0 +1,27 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Glimmer.Lzfse/Glimmer.Lzfse.csproj" />
+    <Project Path="src/Glimmer.Core/Glimmer.Core.csproj" />
+    <Project Path="src/Glimmer.Render/Glimmer.Render.csproj" />
+    <Project Path="src/Glimmer.Tools/Glimmer.Tools.csproj" />
+    <Project Path="src/Glimmer.Heal/Glimmer.Heal.csproj" />
+    <Project Path="src/Glimmer.AI/Glimmer.AI.csproj" />
+    <Project Path="src/Glimmer.Formats/Glimmer.Formats.csproj" />
+    <Project Path="src/Glimmer.Editor/Glimmer.Editor.csproj" />
+    <Project Path="src/Glimmer.App/Glimmer.App.csproj" />
+    <Project Path="src/Glimmer.Console/Glimmer.Console.csproj" />
+    <Project Path="src/Glimmer.Setup/Glimmer.Setup.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Glimmer.Lzfse.Tests/Glimmer.Lzfse.Tests.csproj" />
+    <Project Path="tests/Glimmer.Core.Tests/Glimmer.Core.Tests.csproj" />
+    <Project Path="tests/Glimmer.Render.Tests/Glimmer.Render.Tests.csproj" />
+    <Project Path="tests/Glimmer.Tools.Tests/Glimmer.Tools.Tests.csproj" />
+    <Project Path="tests/Glimmer.Heal.Tests/Glimmer.Heal.Tests.csproj" />
+    <Project Path="tests/Glimmer.AI.Tests/Glimmer.AI.Tests.csproj" />
+    <Project Path="tests/Glimmer.Formats.Tests/Glimmer.Formats.Tests.csproj" />
+    <Project Path="tests/Glimmer.Editor.Tests/Glimmer.Editor.Tests.csproj" />
+    <Project Path="tests/Glimmer.Console.Tests/Glimmer.Console.Tests.csproj" />
+    <Project Path="tests/Glimmer.Setup.Tests/Glimmer.Setup.Tests.csproj" />
+  </Folder>
+</Solution>

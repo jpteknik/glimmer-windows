@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>Glimmer.Editor.Tests</RootNamespace>
+    <!-- ONNX Runtime's telemetry off for the test process, as in Glimmer.AI.Tests: the editor's commands can reach the
+         on-device models (Upscale among them), and no test may reach the network. -->
+    <RunSettingsFilePath>$(MSBuildProjectDirectory)/../Glimmer.AI.Tests/Glimmer.AI.Tests.runsettings</RunSettingsFilePath>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Glimmer.Editor\Glimmer.Editor.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" />
+    <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+</Project>

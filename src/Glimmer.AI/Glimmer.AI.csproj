@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- OpenRouter and other model services, AI pipelines, the assistant/agent, on-device analysis. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Glimmer.AI</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Glimmer.Core\Glimmer.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp" />
+    <PackageReference Include="Microsoft.ML.OnnxRuntime" />
+    <!-- Real-ESRGAN on the graphics card (OnDevice/OnnxGpu.cs). The package's build step copies a preview Direct3D 12
+         Agility SDK next to the provider; it only activates in Windows Developer Mode, and Glimmer uses the system's
+         Direct3D 12 on every machine, so that step is left out (the app project also leaves the SDK's files out). -->
+    <PackageReference Include="Microsoft.ML.OnnxRuntime.EP.WebGpu" ExcludeAssets="buildTransitive" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Real-ESRGAN realesr-general-x4v3 (BSD-3-Clause), converted by OnDevice/Resources/realesrgan_onnx.py. -->
+    <EmbeddedResource Include="OnDevice\Resources\RealESRGAN.onnx" LogicalName="Glimmer.AI.RealESRGAN.onnx" />
+    <None Remove="OnDevice\Resources\realesrgan_onnx.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Glimmer.AI.Tests" />
+  </ItemGroup>
+</Project>

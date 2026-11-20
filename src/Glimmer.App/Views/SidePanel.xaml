@@ -1,0 +1,41 @@
+<!-- Ported from App/DocumentView.swift (SidePanel, SidePanelChrome). The floating panel under the chips: the assistant,
+     or layers / paths / channels / history. Docked (Classic Layout) it runs the full height of the right edge, with
+     every tab. -->
+<UserControl x:Class="Glimmer.App.Views.SidePanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:Glimmer.App.Controls"
+             xmlns:l="clr-namespace:Glimmer.App.Localization"
+             xmlns:p="clr-namespace:Glimmer.App.Views.Panels">
+  <Grid>
+    <c:PanelSurface x:Name="FloatingFrame" CornerRadius="12">
+      <DockPanel x:Name="Body">
+        <DockPanel x:Name="Header" DockPanel.Dock="Top" Height="44" Margin="12,0">
+          <Button x:Name="CloseButton" DockPanel.Dock="Right" Style="{StaticResource Glimmer.IconButton}" Foreground="{DynamicResource Glimmer.MutedBrush}"
+                  Margin="10,0,0,0" Click="OnClose" ToolTip="{l:Loc Close}" AutomationProperties.Name="{l:Loc Close}">
+            <c:Icon Symbol="xmark" Size="12" />
+          </Button>
+          <TextBlock x:Name="AssistantTitle" Text="{l:Loc 'ASSISTANT &amp; AI'}" Style="{StaticResource Glimmer.Text.SmallCaps}" />
+          <ListBox x:Name="Tabs" Style="{StaticResource Glimmer.Segmented}" VerticalAlignment="Center" SelectionChanged="OnTabChanged"
+                   AutomationProperties.Name="{l:Loc Panel}">
+            <ListBox.ItemTemplate>
+              <DataTemplate>
+                <TextBlock Text="{Binding Converter={StaticResource Loc}}" />
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </DockPanel>
+        <Border DockPanel.Dock="Top" Height="1" Background="{DynamicResource Glimmer.EdgeBrush}" />
+        <Grid x:Name="PanelContent">
+          <p:LayersPanel x:Name="Layers" />
+          <p:PathsPanel x:Name="Paths" Visibility="Collapsed" />
+          <p:ChannelsPanel x:Name="Channels" Visibility="Collapsed" />
+          <p:HistoryPanel x:Name="History" Visibility="Collapsed" />
+          <p:AIPanel x:Name="Assistant" Visibility="Collapsed" />
+        </Grid>
+      </DockPanel>
+    </c:PanelSurface>
+    <Border x:Name="DockedFrame" Visibility="Collapsed" Background="{DynamicResource Glimmer.PanelBrush}"
+            BorderBrush="{DynamicResource Glimmer.EdgeBrush}" BorderThickness="1,0,0,0" />
+  </Grid>
+</UserControl>

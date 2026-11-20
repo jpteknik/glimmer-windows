@@ -1,0 +1,63 @@
+Test vectors for Glimmer.Lzfse
+
+Every expected output in the tests (SHA-256 and length) comes from something other than this codec: Apple's reference
+decoder, a digest published with the vector, or the input the stream was made from. The digests are in
+VectorTests.cs.
+
+ref-*.lzfse
+    Made with Apple's reference encoder, lzfse/lzfse (https://github.com/lzfse/lzfse, commit e634ca5,
+    BSD-3-Clause), as compiled in the PyPI wheel lzfse 0.4.2.post1 (Python bindings by m1stadev; the C sources it
+    bundles are byte-identical to that commit). Its compress() calls lzfse_encode_buffer with an output buffer of
+    the input size + 12 bytes, as Glimmer.Lzfse does, so Encode must reproduce these files byte for byte.
+    Inputs:
+      ref-photo-tile        a 256 x 256 tile of Float16 RGBA pixels (linear, premultiplied, little-endian: how
+                            Glimmer stores tiles), the top-left corner of site/source-images/coast-sunset.jpg in
+                            fltman/glimmer-native (an AI-generated example image that repository keeps for its
+                            documentation)
+      ref-soft-edge-tile    synthetic tile: a colour ramp under an alpha ramp
+      ref-uniform-tile      every pixel (0.5, 0.25, 0.125, 1)
+      ref-transparent-tile  524288 zero bytes
+      ref-text-N            the first N bytes of lzfse_encode_base.c, repeated (4095 and 4096 straddle the size
+                            where the encoder switches from LZVN to LZFSE)
+      ref-period3-3000      a 3-byte pattern repeated to 3000 bytes (LZVN, overlapping matches)
+      ref-random-100        100 random bytes (stored: compression gained nothing)
+      ref-text-7            7 bytes (below LZVN's minimum: stored)
+      ref-empty             no bytes
+      ref-mix               random literals mixed with copies of earlier data
+      ref-lzvn-boundaries   built to sit on the LZVN encoder's choices: matches of total length 33/34/35 at medium
+                            distances (medium vs. large distance form), every literal-run form, short matches and
+                            repeated distances
+      ref-lzfse-boundaries  built to sit on the LZFSE encoder's choices: matches of exactly 39/40/41 bytes followed
+                            by a longer overlapping one (the "good match" threshold), a long stretch without matches,
+                            a match longer than one triple holds, a distance past 65535
+    Planted changes to those two choices in the encoder (the medium-distance limit, the good-match threshold) were
+    each confirmed to change the output for one of these two inputs, so the byte-for-byte test catches them.
+
+conv-soft-edge-tile-bvx1.lzfse
+    ref-soft-edge-tile with each bvx2 block header rewritten as an uncompressed (bvx1) header by a separate script.
+    The reference decoder decodes it to the same tile.
+
+lzfse-rust-*.lzfse
+    From shampoofactory/lzfse_rust (https://github.com/shampoofactory/lzfse_rust, commit 9919a0b,
+    MIT OR Apache-2.0): data/mutate/{raw,vx1,vx2,vxn}.lzfse, data/special/{compound,null,null.vx2}.lzfse,
+    data/snappy/{html,alice29.txt}.lzfse. The expected SHA-256 is the .hash file next to each. vx1 and compound
+    were not made by the reference encoder (it never writes bvx1). null.vx2 is rejected by the reference decoder
+    (its first match uses the previous distance before there is one); its .hash file is not used by
+    lzfse_rust's own tests.
+
+dissect-*.lzfse
+    From fox-it/dissect.util (https://github.com/fox-it/dissect.util, Apache-2.0),
+    tests/compression/test_lzfse.py ("basic" and "large"), with the SHA-256 digests given there.
+
+hand-*.lzfse
+    Assembled opcode by opcode, for decoder paths the reference encoder never takes: both nop opcodes and every
+    LZVN opcode form, LZVN matches that reach back into earlier blocks, and blocks of every kind in one stream. The
+    assembling script computed the expected output of each; the reference decoder produces the same.
+    hand-zero-bit-block is one bvx1 block whose tables give every state to a single symbol, so each of its 10000
+    L,M,D triples is read from zero bits (L=1 literal 'A', M=15, D=1): 783 bytes that decode to 160000 bytes. The
+    tests repeat it to make a stream that expands beyond the limits the decoder is given.
+
+fuzz-literal-overflow.lzfse
+    From differential fuzzing against the reference decoder: the reference encoder's stream for a 7-byte pattern
+    repeated to 70000 bytes (one bvx2 block), with n_literals changed to 0 while the matches still consume literals. The reference decoder returns 70000 bytes, filling the
+    missing literals from its zeroed scratch buffer; Glimmer.Lzfse rejects the stream.

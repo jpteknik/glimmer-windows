@@ -1,0 +1,35 @@
+# Build output: every project builds into bin/ and obj/, or into an --artifacts-path folder.
+bin/
+obj/
+artifacts/
+TestResults/
+*.binlog
+
+# Published files (scripts/publish.*): the app, its console companion and the installer are build results.
+dist/
+
+# Test pictures for trying the app by hand (over 100 MB, used by no test).
+samples/
+
+# Kept on purpose although they are binaries, so that building Glimmer needs only the .NET SDK (made by
+# src/Glimmer.Thumbnails/build.sh): the File Explorer thumbnail handler and the Linux build of its ZIP reader.
+!src/Glimmer.App/Shell/GlimmerThumbnails-*.dll
+!tests/Glimmer.Core.Tests/Native/libglimmer_zip.so
+
+# Editors and tools.
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.DotSettings.user
+__pycache__/
+
+# Left behind by the operating system.
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Writes that were cut short (the installer's *.new, atomic saves' *.tmp).
+*.new
+*.tmp

@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The editor's logic without any window: the session (document state, undo, tools, selection, view), the AI
+       controller, the agent server, opening and saving. The WPF app is a thin layer over this, so the logic can be
+       tested on any machine. Platform services (clipboard, file dialogs, key storage, OCR) are interfaces here and are
+       implemented by Glimmer.App. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Glimmer.Editor</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Glimmer.Core\Glimmer.Core.csproj" />
+    <ProjectReference Include="..\Glimmer.Render\Glimmer.Render.csproj" />
+    <ProjectReference Include="..\Glimmer.Tools\Glimmer.Tools.csproj" />
+    <ProjectReference Include="..\Glimmer.Heal\Glimmer.Heal.csproj" />
+    <ProjectReference Include="..\Glimmer.AI\Glimmer.AI.csproj" />
+    <ProjectReference Include="..\Glimmer.Formats\Glimmer.Formats.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Glimmer.Editor.Tests" />
+    <InternalsVisibleTo Include="Glimmer" />
+  </ItemGroup>
+</Project>

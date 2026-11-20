@@ -1,0 +1,29 @@
+<Project>
+  <!-- Central package versions. Only MIT/BSD/Apache-licensed packages; add new ones here. -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- 2D graphics: image decode/encode, text shaping and rendering, path rasterization (MIT). -->
+    <PackageVersion Include="SkiaSharp" Version="3.119.0" />
+    <PackageVersion Include="SkiaSharp.HarfBuzz" Version="3.119.0" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.Win32" Version="3.119.0" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="3.119.0" />
+    <PackageVersion Include="HarfBuzzSharp" Version="8.3.1.1" />
+    <PackageVersion Include="HarfBuzzSharp.NativeAssets.Win32" Version="8.3.1.1" />
+    <PackageVersion Include="HarfBuzzSharp.NativeAssets.Linux" Version="8.3.1.1" />
+    <!-- Vectorized Half <-> float conversion (MIT). -->
+    <PackageVersion Include="System.Numerics.Tensors" Version="10.0.0" />
+    <!-- On-device models (Magic Select, depth, subject and people, layer names, Real-ESRGAN) on the CPU, Windows and
+         Linux alike (MIT). Glimmer.AI. -->
+    <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.32.0" />
+    <!-- Real-ESRGAN on the graphics card: ONNX Runtime's WebGPU execution provider as a plug-in library (MIT, Microsoft;
+         it bundles Dawn, BSD-3-Clause, and on Windows the DirectX Shader Compiler, NCSA). Direct3D 12 on Windows, Vulkan on
+         Linux. Glimmer.AI. -->
+    <PackageVersion Include="Microsoft.ML.OnnxRuntime.EP.WebGpu" Version="0.6.0" />
+    <!-- Tests. -->
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.4" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+  </ItemGroup>
+</Project>

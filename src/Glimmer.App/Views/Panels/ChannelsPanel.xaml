@@ -1,0 +1,15 @@
+<!-- Ported from App/ChannelsPanel.swift. Channels of the composite, as in the web app: the eye shows or hides a
+     channel, clicking a row shows it alone (one colour channel appears in grey), and any channel can be loaded as a
+     selection. -->
+<UserControl x:Class="Glimmer.App.Views.Panels.ChannelsPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:l="clr-namespace:Glimmer.App.Localization">
+  <StackPanel>
+    <StackPanel x:Name="Rows" Margin="8" />
+    <Button x:Name="ShowAll" Style="{DynamicResource Glimmer.Compact.Button}" Content="{l:Loc 'Show All Channels'}" HorizontalAlignment="Center"
+            Margin="0,0,0,6" Click="OnShowAll" />
+    <TextBlock Style="{StaticResource Glimmer.Text.Caption}" Margin="8"
+               Text="{l:Loc 'Click a channel to see it alone, in gray. The eyes combine channels. Channel views don\'t change the image.'}" />
+  </StackPanel>
+</UserControl>

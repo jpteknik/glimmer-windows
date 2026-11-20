@@ -1,0 +1,156 @@
+<!-- The app shell (App/GlimmerApp.swift's DocumentGroup window). One window, a tab per document. The title bar is
+     Glimmer's own (WindowChrome): the dark canvas surround runs to the top edge, the menu bar sits at the left, the
+     tabs after it, and Windows' caption buttons at the right, with Snap Layouts on the maximize button. -->
+<Window x:Class="Glimmer.App.Shell.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:c="clr-namespace:Glimmer.App.Controls"
+        xmlns:l="clr-namespace:Glimmer.App.Localization"
+        xmlns:s="clr-namespace:Glimmer.App.Shell"
+        Title="Glimmer" Width="1440" Height="920" MinWidth="760" MinHeight="520"
+        Background="{DynamicResource Glimmer.BackgroundBrush}" Foreground="{DynamicResource Glimmer.InkBrush}"
+        FontFamily="{DynamicResource Glimmer.Font}" FontSize="{DynamicResource Glimmer.Size.Body}"
+        UseLayoutRounding="True" SnapsToDevicePixels="True" ResizeMode="CanResize" WindowStartupLocation="CenterScreen">
+  <WindowChrome.WindowChrome>
+    <WindowChrome CaptionHeight="40" ResizeBorderThickness="6" CornerRadius="0" GlassFrameThickness="0,0,0,1"
+                  UseAeroCaptionButtons="False" NonClientFrameEdges="None" />
+  </WindowChrome.WindowChrome>
+  <Window.Resources>
+    <!-- Windows' caption buttons: 46 × 40, glyphs from the icon font, red under the pointer for Close. -->
+    <Style x:Key="CaptionButton" TargetType="Button">
+      <Setter Property="Width" Value="46" />
+      <Setter Property="Height" Value="40" />
+      <Setter Property="Foreground" Value="{DynamicResource Glimmer.InkBrush}" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="IsTabStop" Value="False" />
+      <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border x:Name="Chrome" Background="{TemplateBinding Background}">
+              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource Glimmer.RaisedBrush}" />
+              </Trigger>
+              <Trigger Property="IsPressed" Value="True">
+                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource Glimmer.EdgeBrush}" />
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+    <Style x:Key="CloseCaptionButton" TargetType="Button" BasedOn="{StaticResource CaptionButton}">
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border x:Name="Chrome" Background="{TemplateBinding Background}">
+              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="Chrome" Property="Background" Value="#C42B1C" />
+                <Setter Property="Foreground" Value="White" />
+              </Trigger>
+              <Trigger Property="IsPressed" Value="True">
+                <Setter TargetName="Chrome" Property="Background" Value="#C83C30" />
+                <Setter Property="Foreground" Value="White" />
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+    <!-- A document tab: name, a dot while there are unsaved changes, and its close button. -->
+    <Style x:Key="TabItemStyle" TargetType="ListBoxItem">
+      <Setter Property="Foreground" Value="{DynamicResource Glimmer.MutedBrush}" />
+      <Setter Property="FocusVisualStyle" Value="{StaticResource Glimmer.FocusVisual}" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="ListBoxItem">
+            <Border x:Name="Chrome" CornerRadius="8" Margin="2,6" Padding="10,0,4,0" Background="Transparent" BorderThickness="1" BorderBrush="Transparent">
+              <ContentPresenter VerticalAlignment="Center" />
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource Glimmer.RaisedBrush}" />
+              </Trigger>
+              <Trigger Property="IsSelected" Value="True">
+                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource Glimmer.PanelBrush}" />
+                <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource Glimmer.EdgeBrush}" />
+                <Setter Property="Foreground" Value="{DynamicResource Glimmer.InkBrush}" />
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+  </Window.Resources>
+
+  <Border x:Name="Root">
+    <Grid>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="40" />
+        <RowDefinition Height="*" />
+      </Grid.RowDefinitions>
+
+      <Grid x:Name="TitleBar" Background="{DynamicResource Glimmer.BackgroundBrush}">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <c:Icon Symbol="sparkle" Size="15" Margin="14,0,8,0" Foreground="{DynamicResource Glimmer.AccentBrush}" VerticalAlignment="Center" />
+        <Menu x:Name="MainMenu" Grid.Column="1" VerticalAlignment="Center" Background="Transparent"
+              FontSize="{DynamicResource Glimmer.Size.Callout}" WindowChrome.IsHitTestVisibleInChrome="True"
+              AutomationProperties.Name="{l:Loc 'Menu'}" />
+        <DockPanel Grid.Column="2" LastChildFill="False" Margin="12,0,0,0">
+          <ListBox x:Name="TabStrip" DockPanel.Dock="Left" Background="Transparent" BorderThickness="0" Padding="0"
+                   ItemContainerStyle="{StaticResource TabItemStyle}" WindowChrome.IsHitTestVisibleInChrome="True"
+                   ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                   AutomationProperties.Name="{l:Loc 'Documents'}" SelectionChanged="OnTabSelected">
+            <ListBox.ItemsPanel>
+              <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal" />
+              </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemTemplate>
+              <DataTemplate DataType="s:DocumentTab">
+                <StackPanel Orientation="Horizontal" MaxWidth="220">
+                  <Ellipse Width="6" Height="6" Fill="{DynamicResource Glimmer.MutedBrush}" Margin="0,0,7,0" VerticalAlignment="Center"
+                           Visibility="{Binding HasUnsavedChanges, Converter={StaticResource BoolToVisibility}}" />
+                  <TextBlock Text="{Binding Title}" FontSize="{DynamicResource Glimmer.Size.Callout}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                  <Button Style="{StaticResource Glimmer.IconButton}" Margin="6,0,0,0" MinWidth="20" MinHeight="20" Padding="2"
+                          Click="OnCloseTabClicked" Tag="{Binding}" IsTabStop="False"
+                          AutomationProperties.Name="{l:Loc 'Close Tab'}" ToolTip="{l:Loc 'Close Tab'}">
+                    <c:Icon Symbol="xmark" Size="10" />
+                  </Button>
+                </StackPanel>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </DockPanel>
+        <StackPanel Grid.Column="3" Orientation="Horizontal">
+          <Button x:Name="MinimizeButton" Style="{StaticResource CaptionButton}" Click="OnMinimize"
+                  AutomationProperties.Name="{l:Loc Minimize}" ToolTip="{l:Loc Minimize}">
+            <c:Icon Symbol="window.minimize" Size="10" />
+          </Button>
+          <Button x:Name="MaximizeButton" Style="{StaticResource CaptionButton}" Click="OnMaximize"
+                  AutomationProperties.Name="{l:Loc Maximize}" ToolTip="{l:Loc Maximize}">
+            <c:Icon x:Name="MaximizeGlyph" Symbol="window.maximize" Size="10" />
+          </Button>
+          <Button x:Name="CloseButton" Style="{StaticResource CloseCaptionButton}" Click="OnClose"
+                  AutomationProperties.Name="{l:Loc Close}" ToolTip="{l:Loc Close}">
+            <c:Icon Symbol="window.close" Size="10" />
+          </Button>
+        </StackPanel>
+      </Grid>
+
+      <!-- One DocumentView per tab, kept alive so switching tabs keeps each one's panels, focus and scroll. -->
+      <Grid x:Name="Documents" Grid.Row="1" />
+    </Grid>
+  </Border>
+</Window>

@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The compositor and everything that turns a document into pixels: blend modes, adjustments, fills, layer styles,
+       filters, text, liquify, brush dabs, export. Runs on the CPU (the Mac version runs the same math as Metal shaders). -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Glimmer.Render</RootNamespace>
+    <!-- Optimised in debug builds too, as the Mac's package does for its tight pixel loops (GlimmerHeal): the per-pixel
+         kernels here are several times slower unoptimised, and the tests run debug builds with timing budgets. -->
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Glimmer.Core\Glimmer.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp" />
+    <PackageReference Include="SkiaSharp.HarfBuzz" />
+    <PackageReference Include="System.Numerics.Tensors" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Glimmer.Render.Tests" />
+    <InternalsVisibleTo Include="Glimmer.Tools" />
+    <InternalsVisibleTo Include="Glimmer.Tools.Tests" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Files in and out: image import (SkiaSharp; formats it can't read go through IPlatformImageDecoder, which the
+       Windows app implements with WIC), .aips projects from Glimmer for the web, Photoshop files with layers, RAW
+       development, image export. On the Mac these live in GlimmerCore (import) and GlimmerRender (export). -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Glimmer.Formats</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Glimmer.Core\Glimmer.Core.csproj" />
+    <!-- Export flattens documents through the compositor. -->
+    <ProjectReference Include="..\Glimmer.Render\Glimmer.Render.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp" />
+    <PackageReference Include="System.Numerics.Tensors" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Glimmer.Formats.Tests" />
+  </ItemGroup>
+</Project>

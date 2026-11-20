@@ -1,0 +1,6 @@
+; The COM entry points Explorer calls, and the ZIP reader (for the tests, which call it in the DLL that ships).
+LIBRARY GlimmerThumbnails
+EXPORTS
+    DllGetClassObject PRIVATE
+    DllCanUnloadNow PRIVATE
+    glimmer_zip_find_stored

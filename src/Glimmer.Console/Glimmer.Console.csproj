@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The console companion: Glimmer.com, shipped next to Glimmer.exe (the convention of Inkscape, Krita and Visual Studio's
+       devenv.com). In cmd and PowerShell, "Glimmer" followed by a command (export, auto-enhance, ...) finds the .com before
+       the .exe, so the command waits, prints in the console, can be redirected and returns Glimmer's exit status. (An XML
+       comment can't hold two hyphens in a row, so the commands are written here without theirs.) It references no other Glimmer
+       project and must stay small; the one shared file is the list of command words. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>Glimmer.Console</AssemblyName>
+    <RootNamespace>Glimmer.Console</RootNamespace>
+    <ApplicationIcon>..\Glimmer.App\Glimmer.ico</ApplicationIcon>
+    <!-- As small as .NET allows without NativeAOT, which cannot cross-compile from Linux to Windows. These take effect
+         on publish only; scripts/publish.* add self-contained, the runtime id and PublishSingleFile. -->
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <PublishTrimmed>true</PublishTrimmed>
+    <TrimMode>full</TrimMode>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <DebuggerSupport>false</DebuggerSupport>
+    <UseSystemResourceKeys>true</UseSystemResourceKeys>
+    <EventSourceSupport>false</EventSourceSupport>
+    <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
+    <StackTraceSupport>false</StackTraceSupport>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\Glimmer.Editor\CommandLineWords.cs" Link="CommandLineWords.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Glimmer.Console.Tests" />
+  </ItemGroup>
+</Project>

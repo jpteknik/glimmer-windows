@@ -1,0 +1,66 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The Windows app (WPF). Builds from WSL thanks to EnableWindowsTargeting; runs only on Windows. Published
+       self-contained per architecture, so no .NET runtime has to be installed. -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>Glimmer</AssemblyName>
+    <RootNamespace>Glimmer.App</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- The app's icon (made by design/icon/make_icons.cs from the original's artwork): the exe, its windows, the Start
+         menu shortcut, the .glimmer file type and the Settings › Apps entry all take it from here. -->
+    <ApplicationIcon>Glimmer.ico</ApplicationIcon>
+    <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
+    <SelfContained Condition="'$(RuntimeIdentifier)' != ''">true</SelfContained>
+    <SatelliteResourceLanguages>en;sv</SatelliteResourceLanguages>
+    <!-- WPF0001: Application.ThemeMode (the built-in Fluent theme) is marked experimental. -->
+    <NoWarn>$(NoWarn);WPF0001</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Glimmer.Editor\Glimmer.Editor.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp.NativeAssets.Win32" />
+    <PackageReference Include="HarfBuzzSharp.NativeAssets.Win32" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- English -> Swedish, generated from the original's App/Localizable.xcstrings by tools/xcstrings_to_table.py. -->
+    <!-- WithCulture="false": without it MSBuild reads ".sv." in the file name as a culture and moves the file into the
+         Swedish satellite assembly (sv\Glimmer.resources.dll), where the app never looks. That made the first build of
+         the app exit at start-up with "Missing resource Glimmer.Strings.sv.json". -->
+    <EmbeddedResource Include="Localization\Strings.sv.json" LogicalName="Glimmer.Strings.sv.json" WithCulture="false" />
+    <!-- Strings that exist only in the Windows app (window chrome, Windows menus), hand-kept. -->
+    <EmbeddedResource Include="Localization\WindowsStrings.sv.json" LogicalName="Glimmer.WindowsStrings.sv.json" WithCulture="false" />
+    <!-- Development scripts (string table, icon catalogue, checks): not part of the app. -->
+    <None Remove="tools\**" />
+    <!-- The File Explorer thumbnail handler for .glimmer documents (src/Glimmer.Thumbnails, built by its build.sh), for
+         both architectures: Platform/ThumbnailHandler.cs writes the one for the computer's and registers it. -->
+    <None Remove="Shell\GlimmerThumbnails-*.dll" />
+    <EmbeddedResource Include="Shell\GlimmerThumbnails-x64.dll" LogicalName="Glimmer.Thumbnails.x64.dll" WithCulture="false" />
+    <EmbeddedResource Include="Shell\GlimmerThumbnails-arm64.dll" LogicalName="Glimmer.Thumbnails.arm64.dll" WithCulture="false" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Pen input through WM_POINTER (Windows 10+) instead of the older WISP stack: pressure, tilt and the eraser end
+         arrive with every coalesced point, and touch and pen share one pipeline. -->
+    <RuntimeHostConfigurationOption Include="Switch.System.Windows.Input.Stylus.EnablePointerSupport" Value="true" />
+  </ItemGroup>
+  <!-- ONNX Runtime's package carries C++ import libraries (.lib, one of them 21 MB) next to its DLLs. Nothing at run time
+       loads them, so they stay out of the published app. -->
+  <Target Name="LeaveOutImportLibraries" AfterTargets="ComputeResolvedFilesToPublishList">
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(Extension)' == '.lib'" />
+    </ItemGroup>
+  </Target>
+  <!-- The WebGPU provider's package (Real-ESRGAN on the graphics card, Glimmer.AI) carries a preview Direct3D 12 Agility
+       SDK as native files, D3D12\D3D12Core.dll and D3D12\d3d12SDKLayers.dll. It only activates in Windows Developer Mode;
+       Glimmer uses the system's Direct3D 12 on every machine, so the files stay out of builds, the published app and its
+       .deps.json alike, and a developer's machine runs what a customer's does. -->
+  <Target Name="LeaveOutAgilitySdk" AfterTargets="ResolvePackageAssets">
+    <ItemGroup>
+      <NativeCopyLocalItems Remove="@(NativeCopyLocalItems)" Condition="'%(NuGetPackageId)' == 'Microsoft.ML.OnnxRuntime.EP.WebGpu' and ('%(Filename)' == 'D3D12Core' or '%(Filename)' == 'd3d12SDKLayers')" />
+      <RuntimeTargetsCopyLocalItems Remove="@(RuntimeTargetsCopyLocalItems)" Condition="'%(NuGetPackageId)' == 'Microsoft.ML.OnnxRuntime.EP.WebGpu' and ('%(Filename)' == 'D3D12Core' or '%(Filename)' == 'd3d12SDKLayers')" />
+    </ItemGroup>
+  </Target>
+</Project>

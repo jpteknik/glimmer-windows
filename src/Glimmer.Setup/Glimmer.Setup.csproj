@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The installer, Glimmer-<version>-<rid>-setup.exe: a per-user install with no administrator rights (Program.cs says
+       what it does). Built twice by scripts/publish.*: first without a payload, which is the uninstaller placed in the
+       install folder; then with GlimmerPayloadDir pointing at a folder holding Glimmer.exe, Glimmer.com and that
+       Uninstall.exe, which become embedded resources. Windows-only at run time; it builds anywhere and its pure parts
+       are tested on Linux (tests/Glimmer.Setup.Tests). No WPF or Windows Forms: the few questions it asks are Windows
+       message boxes, so it can be trimmed as small as the console companion. -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>Glimmer.Setup</AssemblyName>
+    <RootNamespace>Glimmer.Setup</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- Glimmer's icon with a download badge (design/icon/make_icons.cs). -->
+    <ApplicationIcon>GlimmerSetup.ico</ApplicationIcon>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <PublishTrimmed>true</PublishTrimmed>
+    <TrimMode>full</TrimMode>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <DebuggerSupport>false</DebuggerSupport>
+    <UseSystemResourceKeys>true</UseSystemResourceKeys>
+    <EventSourceSupport>false</EventSourceSupport>
+    <StackTraceSupport>false</StackTraceSupport>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(GlimmerPayloadDir)' != ''">
+    <EmbeddedResource Include="$(GlimmerPayloadDir)/Glimmer.exe" LogicalName="Payload/Glimmer.exe" WithCulture="false" />
+    <EmbeddedResource Include="$(GlimmerPayloadDir)/Glimmer.com" LogicalName="Payload/Glimmer.com" WithCulture="false" />
+    <EmbeddedResource Include="$(GlimmerPayloadDir)/Uninstall.exe" LogicalName="Payload/Uninstall.exe" WithCulture="false" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Glimmer.Setup.Tests" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,27 @@
+<!-- Ported from App/CommandPalette.swift (CommandPalette). Ctrl+K: fuzzy search over every command, tool, filter,
+     adjustment and preset. Text that reads like a request goes to the assistant instead. -->
+<UserControl x:Class="Glimmer.App.Views.CommandPalette"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:Glimmer.App.Controls"
+             xmlns:l="clr-namespace:Glimmer.App.Localization"
+             Width="620" AutomationProperties.Name="{l:Loc 'Command Palette…'}">
+  <c:PanelSurface CornerRadius="14">
+    <StackPanel>
+      <DockPanel Margin="16">
+        <TextBlock DockPanel.Dock="Left" Text="{l:Loc '⌘K'}" FontFamily="{StaticResource Glimmer.MonoFont}" Foreground="{DynamicResource Glimmer.MutedBrush}"
+                   VerticalAlignment="Center" Margin="0,0,10,0" />
+        <TextBlock DockPanel.Dock="Right" Text="{l:Loc '↑↓ · Enter · Esc'}" Style="{StaticResource Glimmer.Text.Caption}" VerticalAlignment="Center" Margin="10,0,0,0" />
+        <TextBox x:Name="Query" Style="{StaticResource Glimmer.PlainTextBox}" FontSize="{StaticResource Glimmer.Size.Title3}"
+                 Tag="{l:Loc 'Search commands, or ask for an edit…'}" TextChanged="OnQueryChanged" PreviewKeyDown="OnQueryKey"
+                 AutomationProperties.Name="{l:Loc 'Search commands, or ask for an edit…'}" />
+      </DockPanel>
+      <Border x:Name="Divider" Height="1" Background="{DynamicResource Glimmer.EdgeBrush}" />
+      <ListBox x:Name="Rows" MaxHeight="380" Margin="6" Background="Transparent" BorderThickness="0" Focusable="False"
+               ItemContainerStyle="{StaticResource Glimmer.PaletteRowItem}" ItemTemplate="{StaticResource Glimmer.PaletteRowTemplate}"
+               ScrollViewer.HorizontalScrollBarVisibility="Disabled" PreviewMouseLeftButtonUp="OnRowClicked" />
+      <TextBlock x:Name="Hint" Margin="16,0,16,14" Style="{StaticResource Glimmer.Text.Secondary}"
+                 Text="{l:Loc 'Try “blur”, “curves”, “brush”, or describe an edit: “make it look like film”.'}" />
+    </StackPanel>
+  </c:PanelSurface>
+</UserControl>

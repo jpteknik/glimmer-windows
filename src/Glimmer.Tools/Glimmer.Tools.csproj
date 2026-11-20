@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Interactive tool definitions: tool ids, brush settings, flood fill. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Glimmer.Tools</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Glimmer.Core\Glimmer.Core.csproj" />
+    <ProjectReference Include="..\Glimmer.Render\Glimmer.Render.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Glimmer.Tools.Tests" />
+  </ItemGroup>
+</Project>
